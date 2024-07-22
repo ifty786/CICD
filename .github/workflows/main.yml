@@ -9,28 +9,30 @@ on:
       - master
 
 jobs:
-   terraform:
+  terraform:
      run-on: Amazon Linux2
+     
      env:
         aws-access-key-id:  ${{ secrets.MY_AWS_ACCESS_KEY}}
         aws-secret-access-key:  ${{ secrets.MY_SECRET_KEY}}
         aws-region: "us-east-1"
+        
      steps:
-    - name: Checkout Code
-      uses: actions/checkout@v2
+      - name: Checkout Code
+        uses: actions/checkout@v2
 
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v2
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
 
-    - name: Terraform Init
-      run: terraform init
+      - name: Terraform Init
+        run: terraform init
 
-    - name: Terraform Plan
-      run: terraform plan
+      - name: Terraform Plan
+        run: terraform plan
       
-    - name: Terraform Apply
-      if: github.ref == 'refs/heads/master'
-      run: terraform apply -auto-approve
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/master'
+        run: terraform apply -auto-approve
 
   
 
