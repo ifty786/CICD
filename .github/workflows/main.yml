@@ -1,48 +1,51 @@
-image:
-  name: registry.github.com/gitlab-org/github-build-images:terraform
-  entrypoint:
-    - '/usr/bin/env'
-    - 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+name: CICD Pipeline
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
 variables:
-    AWS_ACCESS_KEY_ID: ${MY_AWS_ACCESS_KEY}
-    AWS_SECRET_ACCESS_KEY: ${MY_SECRET_KEY}
-    AWS_DEFAULT_REGION: "us-east-1"
+aws-access-key-id:  ${{ secrets.MY_AWS_ACCESS_KEY}}
+aws-secret-access-key:  ${{ secrets.MY_SECRET_KEY}}
+aws-region: "us-east-1"
+jobs:
+  build:
+  terraform:
+    name: CICD Pipeline
+    
+  steps:
+    - name: Checkout Code
+      uses: actions/checkout@v2
 
-before_script:
-  - terraform --version
-  - terraform init 
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v1
 
-stages:
-  - validate
-  - plan
-  - apply
-  - destroy
+    - name: Terraform Init
+      run: terraform init
 
-validate:
-  stage: validate
-  script:
-    - terraform validate
+    - name: Terraform Plan
+      run: terraform plan
+      
+    - name: Terraform Apply
+      if: github.ref == 'refs/heads/master'
+      run: terraform apply -auto-approve
 
-plan:
-  stage: plan
-  script:
-    - terraform plan -out="planfile"
-  dependencies:
-    - validate
-  artifacts:
-    paths:
-      - planfile
+  build:
+    name: Build
+    needs: terraform
+  steps:
+    - name: Checkout Code
+      uses: actions/checkout@v2
+      
+   deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    needs: build
 
-apply:
-  stage: apply
-  script:
-    - terraform apply -input=false "planfile"
-  dependencies:
-    - plan
-  when: manual
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v2
 
-destroy: 
-  stage: destroy
-  script:
-    - terraform destroy -auto-approve
-  when: manual 
