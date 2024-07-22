@@ -12,7 +12,7 @@ aws-secret-access-key:  ${{ secrets.MY_SECRET_KEY}}
 aws-region: "us-east-1"
 jobs:
   terraform:
-    name: Terraform
+    name: CICD Pipeline
     runs-on: ubuntu-latest
 
     steps:
